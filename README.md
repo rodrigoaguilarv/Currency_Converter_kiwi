@@ -11,7 +11,7 @@
 
 ### CLI
 
-./kiwi_cconverter.py --amount 100.0 --input_currency EUR --output_currency CZK
+./currency_converter.py --amount 100.0 --input_currency EUR --output_currency CZK
 {   
     "input": {
         "amount": 100.0,
@@ -20,8 +20,8 @@
     "output": {
         "CZK": 2707.36, 
 ### API
-```
-GET /kiwi_cconverter_w_api?amount=0.9&input_currency=¥&output_currency=AUD HTTP/1.1
+
+GET /currency_converter?amount=0.9&input_currency=¥&output_currency=AUD HTTP/1.1
 {   
     "input": {
         "amount": 0.9,
