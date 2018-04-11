@@ -21,7 +21,7 @@
         "CZK": 2707.36, 
 ### API
 
-GET /currency_converter?amount=0.9&input_currency=¥&output_currency=AUD HTTP/1.1
+GET /currency_converter?amount=0.9&input_currency=EUR&output_currency=AUD HTTP/1.1
 {   
     "input": {
         "amount": 0.9,
