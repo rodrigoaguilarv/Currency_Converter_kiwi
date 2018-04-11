@@ -1,0 +1,48 @@
+#!flask/bin/python
+from flask import Flask, request, jsonify, make_response 
+import requests 
+from lxml import html
+
+app = Flask(__name__)
+
+@app.route('/currency_converter', methods=['GET'])
+def operation():
+    page = requests.get('http://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html')
+    tree = html.fromstring(page.content)
+    # create two lists with the data from the ECB web page. 
+    currency = tree.xpath('//td[@class="currency"]/a/text()')
+    rates = tree.xpath('//span[@class="rate"]/text()')
+
+    amount= request.args.get('amount', type = float)
+    i_c= request.args.get('input_currency')
+    o_c= request.args.get('output_currency', default = None)
+    currency.append('EUR')
+    rates.append(1) 
+    if i_c == None:
+        return 'Error: Wrong format or currency not suported. The format is three letters. example: USD'
+    elif len(i_c) != 3:
+       return 'Error: Wrong format or currency not suported. The format is three letters. example: USD'
+    else:
+        d = dict(zip(currency, rates))
+        rate_i = float(d.get(i_c.upper()))
+        if o_c == None:
+            del d[(i_c.upper())]
+            output= {key:((float(value) / rate_i) * amount) for key, value in d.items()}   
+        else:
+            if len(o_c) != 3:
+                return('Error: Wrong format or currency not suported. The format is three letters. example: USD')
+            else:
+                rate_o = float(d.get(o_c.upper()))
+                output= {o_c.upper(): (rate_o / rate_i) * amount}
+    result={
+        "input": { 
+                  "amount": amount,
+                  "currency": i_c.upper()
+        },
+        
+        "output": output
+    } 
+    return jsonify(result)
+
+if __name__ == '__main__':
+    app.run(debug=True, port=8080)
