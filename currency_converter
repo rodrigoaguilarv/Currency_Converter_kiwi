@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+import requests
+import argparse
+import json
+from lxml import html
+
+if __name__ == '__main__':
+    #Updated rates from European Central Bank.
+    page = requests.get('http://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html')
+    tree = html.fromstring(page.content)
+    # create two lists with the data from the ECB web page. 
+    currency = tree.xpath('//td[@class="currency"]/a/text()')
+    rates = tree.xpath('//span[@class="rate"]/text()')
+
+    parser = argparse.ArgumentParser(description='Currency convertor. Before using the program read the instruction -h')
+    parser.add_argument('--amount', type=float, help='The amount you want to convert.')
+    parser.add_argument('--input_currency', help='Currency to conver. The format is three letters example. USD')
+    parser.add_argument('--output_currency', type=str, help='The target currency')
+
+    args = parser.parse_args()   
+    currency.append('EUR')
+    rates.append(1) 
+    if args.input_currency == None:
+        print('Error: Wrong format or currency not suported. The format is three letters. example: USD')
+        print('Supported currencies:', currency)
+        quit()
+    elif len(args.input_currency) != 3:
+        print('Error: Wrong format. The format is three letters. example:', currency)
+        quit()
+    else:
+        d = dict(zip(currency, rates))
+        rate_i = float(d.get(args.input_currency.upper()))
+        
+        if args.output_currency == None:
+            del d[(args.input_currency.upper())]
+            output= {key:((float(value) / rate_i) * args.amount) for key, value in d.items()}   
+        else:
+            if len(args.output_currency) != 3:
+                print('Error: Wrong format. The format is three letters. example:', currency)
+                quit()
+            else:
+                rate_o = float(d.get(args.output_currency.upper()))
+                output= {args.output_currency: (rate_o / rate_i) * args.amount}
+    result={
+        "input": { 
+                  "amount": args.amount,
+                  "currency": args.input_currency
+        },
+        
+        "output": output
+    } 
+    print(json.dumps(result, indent=4))
